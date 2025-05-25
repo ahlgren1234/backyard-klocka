@@ -1,36 +1,106 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Backyard Klocka
 
-## Getting Started
+En modern webbapplikation för att hantera och övervaka Backyard Ultra och Frontyard Ultra tävlingar. Byggd med Next.js 14, Supabase och Clerk för en säker och skalbar upplevelse.
 
-First, run the development server:
+## Funktioner
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- 🏃‍♂️ Skapa och hantera Backyard Ultra och Frontyard Ultra tävlingar
+- ⏱️ Stöd för både Backyard (fast intervall) och Frontyard (minskande intervall) format
+- 📊 Realtidsövervakning av tävlingsstatus
+- 👥 Användarhantering med säker autentisering
+- 📱 Responsiv design för alla enheter
+- 🌐 Stöd för svenska språket
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Teknisk Stack
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Frontend**: Next.js 14 med App Router
+- **Styling**: Tailwind CSS
+- **Autentisering**: Clerk
+- **Databas**: Supabase (PostgreSQL)
+- **Språk**: TypeScript
+- **Formatering**: Prettier
+- **Linting**: ESLint
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Installation
 
-## Learn More
+1. Klona projektet:
+   ```bash
+   git clone https://github.com/yourusername/backyard-klocka.git
+   cd backyard-klocka
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+2. Installera beroenden:
+   ```bash
+   npm install
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+3. Skapa en `.env.local` fil med följande variabler:
+   ```
+   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
+   CLERK_SECRET_KEY=your_clerk_secret_key
+   NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+   SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+4. Starta utvecklingsservern:
+   ```bash
+   npm run dev
+   ```
 
-## Deploy on Vercel
+## Databasstruktur
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Projektet använder följande tabeller i Supabase:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### races
+- `id`: UUID (primärnyckel)
+- `user_id`: UUID (främmande nyckel till Clerk users)
+- `name`: text
+- `type`: enum ('backyard', 'frontyard')
+- `status`: enum ('not_started', 'in_progress', 'completed')
+- `lap_distance`: integer
+- `interval_time`: integer
+- `lap_reduction`: integer
+- `created_at`: timestamp
+- `updated_at`: timestamp
+
+## Användning
+
+1. **Skapa en tävling**
+   - Navigera till dashboard
+   - Klicka på "Skapa ny tävling"
+   - Fyll i tävlingsinformation
+   - Välj mellan Backyard eller Frontyard format
+
+2. **Hantera tävling**
+   - Se tävlingsinformation
+   - Starta/stoppa tävling
+   - Redigera tävlingsinställningar
+   - Ta bort tävling
+
+## Utveckling
+
+Projektet följer följande kodstandarder:
+- TypeScript för typsäkerhet
+- ESLint för kodkvalitet
+- Prettier för kodformatering
+- Komponentbaserad arkitektur
+- Server Actions för datahantering
+
+## Bidra
+
+1. Forka projektet
+2. Skapa en feature branch (`git checkout -b feature/amazing-feature`)
+3. Committa dina ändringar (`git commit -m 'Add some amazing feature'`)
+4. Pusha till branchen (`git push origin feature/amazing-feature`)
+5. Öppna en Pull Request
+
+## Licens
+
+Detta projekt är licensierat under MIT-licensen - se [LICENSE](LICENSE) filen för detaljer.
+
+## Kontakt
+
+Ditt namn - [@dittwitter](https://twitter.com/dittwitter)
+
+Projektlänk: [https://github.com/yourusername/backyard-klocka](https://github.com/yourusername/backyard-klocka)
