@@ -172,63 +172,99 @@ export default function RaceDisplay({ race, onStatusChange }: RaceDisplayProps) 
   }, [isRunning, timeLeft, race.type, race.interval_time, race.lap_reduction, currentLap, race.id]);
 
   return (
-    <div className="fixed inset-0 bg-gray-900 text-white flex flex-col items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-6xl font-bold mb-8">{race.name}</h1>
-        
-        {countdownToStart !== null && countdownToStart > 0 && (
-          <div className="mb-8">
-            <p className="text-2xl mb-4">Tävlingen startar om</p>
-            <p className="text-8xl font-bold">{formatTime(countdownToStart)}</p>
-            {race.start_time && (
-              <p className="text-xl mt-4 text-gray-400">
-                {new Date(race.start_time).toLocaleString('sv-SE', {
-                  year: 'numeric',
-                  month: '2-digit',
-                  day: '2-digit',
-                  hour: '2-digit',
-                  minute: '2-digit'
-                })}
-              </p>
+    <div className="fixed inset-0 bg-gray-900 text-white flex flex-col items-center justify-center p-4">
+      <div className="text-center w-full mx-auto">
+        <h1 className="text-6xl font-bold mb-4">{race.name}</h1>
+        <p className="text-2xl text-gray-300 mb-12">Typ: {race.type === 'backyard' ? 'Backyard Ultra' : 'Frontyard'}</p>
+
+        {/* Backyard Ultra Layout */}
+        {race.type === 'backyard' && (
+          <div className="w-full">
+            {/* Countdown to Start */}
+            {countdownToStart !== null && countdownToStart > 0 && (
+              <div className="mb-12">
+                <p className="text-3xl mb-4">Tävlingen startar om</p>
+                <p className="text-8xl font-bold">{formatTime(countdownToStart)}</p>
+                {race.start_time && (
+                  <p className="text-xl mt-4 text-gray-400">
+                    {new Date(race.start_time).toLocaleString('sv-SE', {
+                      year: 'numeric',
+                      month: '2-digit',
+                      day: '2-digit',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </p>
+                )}
+              </div>
             )}
+
+            {/* Running Display */}
+            {isRunning && (
+              <div className="grid grid-cols-3 gap-16 items-center text-center px-4">
+                {/* Current Lap Info */}
+                <div>
+                  <p className="text-3xl mb-2 text-gray-400">Varv Nr:</p>
+                  <p className="text-9xl font-bold">{currentLap + 1}</p>
+                </div>
+
+                {/* Time to next start */}
+                <div>
+                  <p className="text-3xl mb-2 text-gray-400">Tid till nästa start:</p>
+                  <p className="text-9xl font-bold">{formatTime(timeLeft)}</p>
+                </div>
+
+                {/* Distance after this lap */}
+                <div>
+                  <p className="text-3xl mb-2 text-gray-400">Distans (hittills):</p>
+                  <p className="text-9xl font-bold">{(race.lap_distance * currentLap / 1000).toFixed(1)} km</p>
+                </div>
+
+              </div>
+            )}
+
+            {/* Stop Button */}
+            {isRunning && (
+              <div className="mt-20 flex justify-center">
+                 <button
+                  onClick={handleStop}
+                  className="bg-red-600 text-white px-8 py-4 rounded-lg text-2xl hover:bg-red-700 transition-colors"
+                >
+                  Avsluta tävling
+                </button>
+              </div>
+            )}
+
+            {/* Not Running / Countdown Finished */}
+            {!isRunning && countdownToStart === 0 && ( /* Also show button if status is draft/not_started and countdown is 0 */
+               <div className="mt-16 flex justify-center">
+                <button
+                  onClick={handleStart}
+                  className="bg-green-600 text-white px-8 py-4 rounded-lg text-2xl hover:bg-green-700 transition-colors"
+                >
+                  Starta tävling
+                </button>
+              </div>
+            )}
+
+            {/* Completed Status */}
+            {race.status === 'completed' && (
+              <p className="text-4xl font-bold text-green-500 mt-8">Tävlingen är avslutad!</p>
+            )}
+
           </div>
         )}
 
-        {isRunning && (
-          <>
-            <div className="mb-12">
-              <p className="text-4xl mb-4">Återstående tid till nästa start</p>
-              <p className="text-9xl font-bold">{formatTime(timeLeft)}</p>
-            </div>
-
-            <div className="mb-12">
-              <p className="text-4xl mb-4">Genomförda varv</p>
-              <p className="text-8xl font-bold">{currentLap}</p>
-            </div>
-
-            <div className="flex gap-8">
-              <button
-                onClick={handleStop}
-                className="bg-red-600 text-white px-8 py-4 rounded-lg text-2xl hover:bg-red-700 transition-colors"
-              >
-                Avsluta tävling
-              </button>
-            </div>
-          </>
+        {/* Add Frontyard Layout here if needed later */}
+        {race.type !== 'backyard' && (
+           <div className="w-full">
+             {/* Keep existing Frontyard/default layout or define a new one */}
+             {/* For now, just show a message */}
+             <p className="text-2xl">Visar timer för {race.type}. Layout för Frontyard kommer snart.</p>
+             {/* You can copy/paste the old layout from the previous version if you want to keep it */}
+           </div>
         )}
 
-        {!isRunning && countdownToStart === 0 && (
-          <button
-            onClick={handleStart}
-            className="bg-green-600 text-white px-8 py-4 rounded-lg text-2xl hover:bg-green-700 transition-colors"
-          >
-            Starta tävling
-          </button>
-        )}
-
-        {race.status === 'completed' && (
-          <p className="text-4xl font-bold text-green-500">Tävlingen är avslutad!</p>
-        )}
       </div>
     </div>
   );
