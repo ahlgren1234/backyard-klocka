@@ -60,4 +60,16 @@ export interface Database {
   }
 }
 
-export type Race = Database['public']['Tables']['races']['Row'] 
+export type Race = {
+  id: string;
+  name: string;
+  type: 'backyard' | 'frontyard';
+  interval_time: number;
+  lap_reduction: number;
+  lap_distance: number;
+  current_lap: number;
+  status: 'draft' | 'not_started' | 'active' | 'in_progress' | 'completed';
+  start_time: string | null;
+  created_at: string;
+  user_id: string;
+}; 

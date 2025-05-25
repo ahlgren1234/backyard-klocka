@@ -1,72 +1,43 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+// Ta bort useRouter eftersom den inte används längre
+// import { useRouter } from 'next/navigation';
+import { createRace } from '@/app/actions/races'; // Importera server action
 
 type RaceType = 'backyard' | 'frontyard';
 
 export default function CreateRaceForm() {
-  const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // Vi behöver inte hantera loading och error state lokalt på samma sätt nu när vi använder server actions
+  // const [isLoading, setIsLoading] = useState(false);
+  // const [error, setError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     name: '',
     type: 'backyard' as RaceType,
     lap_distance: 6704, // Standard backyard-längd i meter
-    interval_time: 3600, // 1 timme i sekunder
+    interval_time: 60, // 1 minut i minuter (input är i minuter)
     lap_reduction: 0,
+    start_time: '',
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      // För backyard-tävlingar, sätt lap_reduction till 0
-      const submitData = {
-        ...formData,
-        lap_reduction: formData.type === 'backyard' ? 0 : formData.lap_reduction,
-      };
-
-      const response = await fetch('/api/races', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(submitData),
-      });
-
-      if (!response.ok) {
-        const error = await response.text();
-        throw new Error(error);
-      }
-
-      router.push('/dashboard');
-      router.refresh();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Ett fel uppstod');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // Ta bort handleSubmit funktionen, vi använder form action istället
+  // const handleSubmit = async (e: React.FormEvent) => { ... };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'name' || name === 'type' ? value : Number(value),
+      // Hantera start_time som sträng, andra numeriska fält som nummer
+      [name]: name === 'name' || name === 'type' || name === 'start_time' ? value : Number(value),
     }));
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {error && (
-        <div className="bg-red-50 text-red-500 p-4 rounded">
-          {error}
-        </div>
-      )}
+    // Använd action prop:en för att anropa server action
+    <form action={createRace} className="space-y-6">
+      {/* Vi hanterar inte error state här längre på samma sätt */}
+      {/* {error && ( ... )} */}
 
       <div>
         <label htmlFor="name" className="block text-sm font-medium text-gray-700">
@@ -79,7 +50,7 @@ export default function CreateRaceForm() {
           required
           value={formData.name}
           onChange={handleChange}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900 placeholder-gray-500"
         />
       </div>
 
@@ -93,7 +64,7 @@ export default function CreateRaceForm() {
           required
           value={formData.type}
           onChange={handleChange}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900"
         >
           <option value="backyard">Backyard</option>
           <option value="frontyard">Frontyard</option>
@@ -112,13 +83,13 @@ export default function CreateRaceForm() {
           min="1"
           value={formData.lap_distance}
           onChange={handleChange}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900 placeholder-gray-500"
         />
       </div>
 
       <div>
         <label htmlFor="interval_time" className="block text-sm font-medium text-gray-700">
-          Tidsintervall (sekunder)
+          Tidsintervall (minuter)
         </label>
         <input
           type="number"
@@ -128,34 +99,57 @@ export default function CreateRaceForm() {
           min="1"
           value={formData.interval_time}
           onChange={handleChange}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900 placeholder-gray-500"
         />
+        {/* Ta bort extra visning av minuter här, server action hanterar det nu */}
+        {/* <span className="text-sm text-gray-500" id="interval-time-display"></span> */}
       </div>
 
       {formData.type === 'frontyard' && (
         <div>
           <label htmlFor="lap_reduction" className="block text-sm font-medium text-gray-700">
-            Minskning per varv (sekunder)
+            Minskning per varv (minuter)
           </label>
           <input
             type="number"
             id="lap_reduction"
             name="lap_reduction"
-            required
+            required={formData.type === 'frontyard'}
             min="0"
             value={formData.lap_reduction}
             onChange={handleChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900 placeholder-gray-500"
           />
+          {/* Ta bort extra visning av minuter här, server action hanterar det nu */}
+          {/* <span className="text-sm text-gray-500" id="time-reduction-display"></span> */}
         </div>
       )}
 
+      {/* Lägg till fält för planerad starttid */}
+      <div>
+        <label htmlFor="start_time" className="block text-sm font-medium text-gray-700">
+          Planerad starttid (valfri)
+        </label>
+        <input
+          type="datetime-local"
+          id="start_time"
+          name="start_time"
+          value={formData.start_time}
+          onChange={handleChange}
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
+        />
+        <p className="mt-1 text-sm text-gray-500">
+          Lämna tomt för att starta tävlingen manuellt senare.
+        </p>
+      </div>
+
       <button
         type="submit"
-        disabled={isLoading}
+        // disabled={isLoading} // isLoading hanteras av Next.js useFormStatus hook om du behöver
         className="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 disabled:opacity-50"
       >
-        {isLoading ? 'Skapar...' : 'Skapa tävling'}
+        Skapa tävling
+        {/* {isLoading ? 'Skapar...' : 'Skapa tävling'} */}
       </button>
     </form>
   );

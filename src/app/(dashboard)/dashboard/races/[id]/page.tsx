@@ -2,7 +2,6 @@ import { auth } from '@clerk/nextjs';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
-import RaceActions from '@/components/features/RaceActions';
 import DeleteRaceButton from '@/components/features/DeleteRaceButton';
 import { Race } from '@/lib/supabase/database.types';
 
@@ -61,6 +60,12 @@ export default async function RacePage({ params }: PageProps) {
             >
               Redigera tävling
             </Link>
+            <Link
+              href={`/dashboard/races/${typedRace.id}/timer`}
+              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+            >
+              Visa timer
+            </Link>
             <DeleteRaceButton userId={userId} raceId={typedRace.id} />
           </div>
         </div>
@@ -81,6 +86,20 @@ export default async function RacePage({ params }: PageProps) {
                 <dt className="text-gray-700">Skapad</dt>
                 <dd className="font-medium text-gray-900">{new Date(typedRace.created_at).toLocaleDateString('sv-SE')}</dd>
               </div>
+              {typedRace.start_time && (
+                <div>
+                  <dt className="text-gray-700">Planerad starttid</dt>
+                  <dd className="font-medium text-gray-900">
+                    {new Date(typedRace.start_time).toLocaleString('sv-SE', {
+                      year: 'numeric',
+                      month: '2-digit',
+                      day: '2-digit',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </dd>
+                </div>
+              )}
             </dl>
           </div>
 
@@ -104,8 +123,6 @@ export default async function RacePage({ params }: PageProps) {
             </dl>
           </div>
         </div>
-
-        <RaceActions raceId={typedRace.id} />
       </div>
     </div>
   );

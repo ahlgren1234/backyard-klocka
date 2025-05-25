@@ -43,8 +43,16 @@ export default async function EditRacePage({ params }: PageProps) {
     const seconds = minutes * 60;
     
     const type = formData.get('type') as 'backyard' | 'frontyard';
-    const timeReductionMinutes = type === 'frontyard' ? parseInt(formData.get('time_reduction') as string) : 0;
+    const timeReductionMinutes = type === 'frontyard' ? parseInt(formData.get('lap_reduction') as string) : 0;
     const timeReductionSeconds = timeReductionMinutes * 60;
+
+    const startTime = formData.get('start_time') as string;
+    let startTimeISO = null;
+
+    if (startTime) {
+      const localDate = new Date(startTime);
+      startTimeISO = localDate.toISOString();
+    }
     
     const supabase = await createClient();
     const { error } = await supabase
@@ -55,6 +63,7 @@ export default async function EditRacePage({ params }: PageProps) {
         lap_distance: parseInt(formData.get('lap_distance') as string),
         interval_time: seconds,
         lap_reduction: timeReductionSeconds,
+        start_time: startTimeISO,
       })
       .eq('id', raceId)
       .eq('user_id', userId);
@@ -71,19 +80,20 @@ export default async function EditRacePage({ params }: PageProps) {
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
         <Link 
-          href={`/dashboard/races/${params.id}`}
+          href={`/dashboard/races/${typedRace.id}`}
           className="text-blue-600 hover:text-blue-800 font-medium mb-4 inline-block"
         >
           ← Tillbaka till tävling
         </Link>
       </div>
 
-      <div className="max-w-2xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8 text-gray-900">Redigera tävling</h1>
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <h1 className="text-3xl font-bold text-gray-900 mb-6">Redigera tävling</h1>
 
         <form action={updateRace} className="space-y-6">
+          <input type="hidden" name="raceId" value={typedRace.id} />
           <input type="hidden" name="userId" value={userId} />
-          <input type="hidden" name="raceId" value={params.id} />
+
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
               Tävlingsnamn
@@ -92,9 +102,9 @@ export default async function EditRacePage({ params }: PageProps) {
               type="text"
               id="name"
               name="name"
-              required
               defaultValue={typedRace.name}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
+              required
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
 
@@ -105,72 +115,74 @@ export default async function EditRacePage({ params }: PageProps) {
             <select
               id="type"
               name="type"
-              required
               defaultValue={typedRace.type}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+              required
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
             >
-              <option value="backyard">Backyard</option>
-              <option value="frontyard">Frontyard</option>
+              <option value="backyard">Backyard Ultra</option>
+              <option value="frontyard">Frontyard Ultra</option>
             </select>
           </div>
 
           <div>
-            <label htmlFor="lap_distance" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="lap_distance" className="block text-sm font-medium text-gray-700">
               Rundlängd (meter)
             </label>
             <input
               type="number"
               id="lap_distance"
               name="lap_distance"
-              required
               min="1"
               defaultValue={typedRace.lap_distance}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
+              required
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900"
             />
           </div>
 
           <div>
-            <label htmlFor="interval_time" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="interval_time" className="block text-sm font-medium text-gray-700">
               Intervalltid (minuter)
             </label>
-            <div className="flex items-center space-x-2">
-              <input
-                type="number"
-                id="interval_time"
-                name="interval_time"
-                required
-                min="1"
-                defaultValue={Math.floor(typedRace.interval_time / 60)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
-              />
-              <span className="text-sm text-gray-500" id="interval-time-display"></span>
-            </div>
-            <p className="mt-1 text-sm text-gray-500">
-              Ange tiden i minuter (t.ex. 5 för 5 minuter)
-            </p>
+            <input
+              type="number"
+              id="interval_time"
+              name="interval_time"
+              min="1"
+              defaultValue={typedRace.interval_time / 60}
+              required
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+            />
           </div>
 
-          {typedRace.type === 'frontyard' && (
+          <div>
+            <label htmlFor="start_time" className="block text-sm font-medium text-gray-700">
+              Planerad starttid
+            </label>
+            <input
+              type="datetime-local"
+              id="start_time"
+              name="start_time"
+              defaultValue={typedRace.start_time ? new Date(typedRace.start_time).toISOString().slice(0, 16) : ''}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+            />
+          </div>
+
+          <div id="frontyard-fields" className="space-y-6" style={{ display: typedRace.type === 'frontyard' ? 'block' : 'none' }}>
             <div>
-              <label htmlFor="time_reduction" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="lap_reduction" className="block text-sm font-medium text-gray-700">
                 Tidsreduktion per varv (minuter)
               </label>
-              <div className="flex items-center space-x-2">
-                <input
-                  type="number"
-                  id="time_reduction"
-                  name="time_reduction"
-                  min="1"
-                  defaultValue={Math.floor(typedRace.lap_reduction / 60)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
-                />
-                <span className="text-sm text-gray-500" id="time-reduction-display"></span>
-              </div>
-              <p className="mt-1 text-sm text-gray-500">
-                Ange hur många minuter tiden ska minska varje varv
-              </p>
+              <input
+                type="number"
+                id="lap_reduction"
+                name="lap_reduction"
+                min="0"
+                defaultValue={typedRace.lap_reduction / 60}
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+              />
             </div>
-          )}
+          </div>
 
           <div className="flex justify-end">
             <button
@@ -182,57 +194,6 @@ export default async function EditRacePage({ params }: PageProps) {
           </div>
         </form>
       </div>
-
-      <script dangerouslySetInnerHTML={{
-        __html: `
-          document.getElementById('type').addEventListener('change', function() {
-            const timeReductionContainer = document.getElementById('time-reduction-container');
-            if (timeReductionContainer) {
-              timeReductionContainer.remove();
-            }
-            if (this.value === 'frontyard') {
-              const container = document.createElement('div');
-              container.id = 'time-reduction-container';
-              container.innerHTML = \`
-                <label for="time_reduction" class="block text-sm font-medium text-gray-700 mb-1">
-                  Tidsreduktion per varv (minuter)
-                </label>
-                <div class="flex items-center space-x-2">
-                  <input
-                    type="number"
-                    id="time_reduction"
-                    name="time_reduction"
-                    min="1"
-                    value="1"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
-                  />
-                  <span class="text-sm text-gray-500" id="time-reduction-display"></span>
-                </div>
-                <p class="mt-1 text-sm text-gray-500">
-                  Ange hur många minuter tiden ska minska varje varv
-                </p>
-              \`;
-              this.parentElement.parentElement.insertBefore(container, this.parentElement.nextSibling);
-              document.getElementById('time_reduction').addEventListener('input', function() {
-                const minutes = parseInt(this.value) || 0;
-                document.getElementById('time-reduction-display').textContent = \`(\${minutes} minuter)\`;
-              });
-            }
-          });
-
-          document.getElementById('interval_time').addEventListener('input', function() {
-            const minutes = parseInt(this.value) || 0;
-            const display = document.getElementById('interval-time-display');
-            display.textContent = \`(\${minutes} minuter)\`;
-          });
-
-          // Trigger initial display
-          document.getElementById('interval_time').dispatchEvent(new Event('input'));
-          if (document.getElementById('time_reduction')) {
-            document.getElementById('time_reduction').dispatchEvent(new Event('input'));
-          }
-        `
-      }} />
     </div>
   );
 } 
